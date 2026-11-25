@@ -1,0 +1,23 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /workspaces/3kb_main/devotionals/{employeeUid}/{dateKey}/{fileName} {
+      allow read: if request.auth != null && (
+        resource.metadata.ownerUid == request.auth.uid ||
+        ('email' in request.auth.token &&
+         request.auth.token.email == '374kingdombuilders@gmail.com' &&
+         'email_verified' in request.auth.token &&
+         request.auth.token.email_verified == true)
+      );
+      allow create: if request.auth != null &&
+                       request.resource.size <= 5 * 1024 * 1024 &&
+                       request.resource.contentType.matches('image/.*') &&
+                       request.resource.metadata.ownerUid == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

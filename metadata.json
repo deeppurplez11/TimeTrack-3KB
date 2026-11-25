@@ -1,0 +1,6 @@
+{
+  "name": "3KB TimeTrack",
+  "description": "Self-contained employee attendance tracking app for 374 Kingdom Builders (3KB) with Asia/Manila timezone, admin dashboard, weekly matrix, CSV export, and backup/restore.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

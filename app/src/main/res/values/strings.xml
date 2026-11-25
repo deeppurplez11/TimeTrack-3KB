@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">3KB TimeTrack</string>
+    <string name="company_name">374 Kingdom Builders</string>
+    <string name="brand_tagline">374 Kingdom Builders • Attendance Portal</string>
+    <string name="timezone_label">Asia/Manila (PHT)</string>
+    <string name="tab_employee">Employee</string>
+    <string name="tab_admin">CEO / Admin</string>
+    <string name="action_clock_in">Clock In</string>
+    <string name="action_start_break">Start Break</string>
+    <string name="action_end_break">End Break</string>
+    <string name="action_clock_out">Clock Out</string>
+    <string name="action_sign_out">Sign Out</string>
+    <string name="status_not_clocked_in">Not Clocked In</string>
+    <string name="status_working">Working</string>
+    <string name="status_on_break">On Break</string>
+    <string name="status_clocked_out">Clocked Out</string>
+</resources>

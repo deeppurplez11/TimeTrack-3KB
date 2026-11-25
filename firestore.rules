@@ -1,0 +1,507 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        ('email' in request.auth.token &&
+         request.auth.token.email == '374kingdombuilders@gmail.com' &&
+         'email_verified' in request.auth.token &&
+         request.auth.token.email_verified == true)
+      );
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidUid(uid) {
+      return uid is string && uid.size() >= 1 && uid.size() <= 128;
+    }
+
+    function isValidDateKey(key) {
+      return key is string && key.size() == 10 && key.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+    }
+
+    function isSharedWorkspace(workspaceId) {
+      return workspaceId == '3kb_main';
+    }
+
+    function isWorkspaceMember(workspaceId) {
+      return isSignedIn() &&
+             isSharedWorkspace(workspaceId) &&
+             exists(/databases/$(database)/documents/workspaces/$(workspaceId)/members/$(request.auth.uid));
+    }
+
+    function isValidWorkspace(data) {
+      return isValidUid(data.ownerUid) &&
+             data.workspaceId == '3kb_main' &&
+             data.name is string &&
+             data.name.size() >= 1 &&
+             data.name.size() <= 80 &&
+             data.createdAt is timestamp &&
+             data.createdAt <= request.time &&
+             data.updatedAt is timestamp &&
+             data.updatedAt <= request.time;
+    }
+
+    function isValidWorkspaceMember(data) {
+      return isValidUid(data.ownerUid) &&
+             data.workspaceId == '3kb_main' &&
+             data.role == 'member' &&
+             data.createdAt is timestamp &&
+             data.createdAt <= request.time &&
+             data.updatedAt is timestamp &&
+             data.updatedAt <= request.time;
+    }
+
+    function isValidPrivacySettings(data) {
+      return isValidUid(data.ownerUid) &&
+             isValidUid(data.updatedByUid) &&
+             data.workspaceId == '3kb_main' &&
+             data.policy is string &&
+             data.policy in ['STATUS_ONLY', 'OPT_IN_ONLY', 'ADMIN_PASTORAL_VIEW'] &&
+             data.createdAt is timestamp &&
+             data.createdAt <= request.time &&
+             data.updatedAt is timestamp &&
+             data.updatedAt <= request.time;
+    }
+
+    function isValidEmployee(data) {
+      return isValidUid(data.ownerUid) &&
+             data.workspaceId == '3kb_main' &&
+             data.employeeId is string &&
+             data.employeeId.size() >= 1 &&
+             data.employeeId.size() <= 32 &&
+             data.fullName is string &&
+             data.fullName.size() >= 1 &&
+             data.fullName.size() <= 80 &&
+             data.role is string &&
+             data.role.size() >= 1 &&
+             data.role.size() <= 80 &&
+             data.pin is string &&
+             data.pin.matches('^[0-9]{4,6}$') &&
+             data.active is bool &&
+             data.admin is bool &&
+             data.createdAtMillis is int &&
+             data.createdAtMillis >= 0 &&
+             data.createdAt is timestamp &&
+             data.createdAt <= request.time &&
+             data.updatedAt is timestamp &&
+             data.updatedAt <= request.time;
+    }
+
+    function isValidDevotionalStatus(data) {
+      return isValidUid(data.ownerUid) &&
+             data.workspaceId == '3kb_main' &&
+             isValidId(data.employeeUid) &&
+             data.employeeId is string &&
+             data.employeeId.size() >= 1 &&
+             data.employeeId.size() <= 32 &&
+             data.employeeName is string &&
+             data.employeeName.size() >= 1 &&
+             data.employeeName.size() <= 80 &&
+             isValidDateKey(data.dateKey) &&
+             data.status == 'SUBMITTED' &&
+             data.hasPhoto is bool &&
+             data.hasPhoto == true &&
+             data.shareWithAdmin is bool &&
+             data.submittedAt is timestamp &&
+             data.submittedAt <= request.time &&
+             data.createdAt is timestamp &&
+             data.createdAt <= request.time &&
+             data.updatedAt is timestamp &&
+             data.updatedAt <= request.time;
+    }
+
+    function isValidDevotional(data) {
+      return isValidUid(data.ownerUid) &&
+             data.workspaceId == '3kb_main' &&
+             isValidId(data.employeeUid) &&
+             data.employeeId is string &&
+             data.employeeId.size() >= 1 &&
+             data.employeeId.size() <= 32 &&
+             data.employeeName is string &&
+             data.employeeName.size() >= 1 &&
+             data.employeeName.size() <= 80 &&
+             isValidDateKey(data.dateKey) &&
+             data.scripture is string &&
+             data.scripture.size() >= 1 &&
+             data.scripture.size() <= 1000 &&
+             data.observation is string &&
+             data.observation.size() >= 1 &&
+             data.observation.size() <= 2000 &&
+             data.application is string &&
+             data.application.size() >= 1 &&
+             data.application.size() <= 2000 &&
+             data.prayer is string &&
+             data.prayer.size() >= 1 &&
+             data.prayer.size() <= 2000 &&
+             data.photoStoragePath is string &&
+             data.photoStoragePath.size() >= 1 &&
+             data.photoStoragePath.size() <= 300 &&
+             data.photoUrl is string &&
+             data.photoUrl.size() <= 350000 &&
+             data.status == 'SUBMITTED' &&
+             data.shareWithAdmin is bool &&
+             data.submittedAt is timestamp &&
+             data.submittedAt <= request.time &&
+             data.createdAt is timestamp &&
+             data.createdAt <= request.time &&
+             data.updatedAt is timestamp &&
+             data.updatedAt <= request.time;
+    }
+
+    function isValidStatus(status) {
+      return status is string &&
+             status in ['NOT_CLOCKED_IN', 'WORKING', 'ON_BREAK', 'CLOCKED_OUT'];
+    }
+
+    function isValidAttendance(data) {
+      return isValidUid(data.ownerUid) &&
+             data.workspaceId == '3kb_main' &&
+             isValidId(data.employeeUid) &&
+             isValidId(data.devotionalId) &&
+             data.devotionalId == data.employeeUid + '_' + data.dateKey &&
+             isValidDateKey(data.dateKey) &&
+             data.clockInMillis is int &&
+             data.clockInMillis >= 0 &&
+             (!('clockOutMillis' in data) || data.clockOutMillis == null || (data.clockOutMillis is int && data.clockOutMillis >= 0)) &&
+             isValidStatus(data.status) &&
+             data.createdAt is timestamp &&
+             data.createdAt <= request.time &&
+             data.updatedAt is timestamp &&
+             data.updatedAt <= request.time;
+    }
+
+    function hasValidDevotionalForAttendance(workspaceId, data) {
+      return exists(/databases/$(database)/documents/workspaces/$(workspaceId)/devotionals/$(data.devotionalId)) &&
+             get(/databases/$(database)/documents/workspaces/$(workspaceId)/devotionals/$(data.devotionalId)).data.status == 'SUBMITTED' &&
+             get(/databases/$(database)/documents/workspaces/$(workspaceId)/devotionals/$(data.devotionalId)).data.employeeUid == data.employeeUid &&
+             get(/databases/$(database)/documents/workspaces/$(workspaceId)/devotionals/$(data.devotionalId)).data.dateKey == data.dateKey;
+    }
+
+    function isValidBreak(data) {
+      return isValidUid(data.ownerUid) &&
+             data.workspaceId == '3kb_main' &&
+             isValidId(data.attendanceId) &&
+             isValidId(data.employeeUid) &&
+             isValidDateKey(data.dateKey) &&
+             data.breakStartMillis is int &&
+             data.breakStartMillis >= 0 &&
+             (!('breakEndMillis' in data) || data.breakEndMillis == null || (data.breakEndMillis is int && data.breakEndMillis >= 0)) &&
+             data.createdAt is timestamp &&
+             data.createdAt <= request.time &&
+             data.updatedAt is timestamp &&
+             data.updatedAt <= request.time;
+    }
+
+    match /workspaces/{workspaceId} {
+      allow get: if isSignedIn() && isSharedWorkspace(workspaceId);
+      allow list: if isSignedIn() && existing().workspaceId == '3kb_main';
+
+      allow create: if isSignedIn() &&
+                       isSharedWorkspace(workspaceId) &&
+                       incoming().ownerUid == request.auth.uid &&
+                       incoming().workspaceId == workspaceId &&
+                       incoming().keys().hasAll([
+                         'ownerUid', 'workspaceId', 'name', 'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'ownerUid', 'workspaceId', 'name', 'createdAt', 'updatedAt'
+                       ]) &&
+                       isValidWorkspace(incoming());
+
+      allow update, delete: if false;
+
+      match /members/{memberUid} {
+        allow get: if isSignedIn() &&
+                      isSharedWorkspace(workspaceId) &&
+                      isValidId(memberUid) &&
+                      request.auth.uid == memberUid;
+        allow list: if isSignedIn() &&
+                       isSharedWorkspace(workspaceId) &&
+                       existing().ownerUid == request.auth.uid;
+
+        allow create: if isSignedIn() &&
+                         isSharedWorkspace(workspaceId) &&
+                         isValidId(memberUid) &&
+                         request.auth.uid == memberUid &&
+                         incoming().ownerUid == request.auth.uid &&
+                         incoming().workspaceId == workspaceId &&
+                         incoming().keys().hasAll([
+                           'ownerUid', 'workspaceId', 'role', 'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'ownerUid', 'workspaceId', 'role', 'createdAt', 'updatedAt'
+                         ]) &&
+                         isValidWorkspaceMember(incoming()) &&
+                         (
+                           exists(/databases/$(database)/documents/workspaces/$(workspaceId)) ||
+                           existsAfter(/databases/$(database)/documents/workspaces/$(workspaceId))
+                         );
+
+        allow update, delete: if false;
+      }
+
+      match /settings/{settingId} {
+        allow get: if isSharedWorkspace(workspaceId) && settingId == 'devotional_privacy' && isWorkspaceMember(workspaceId);
+        allow list: if isSignedIn() && isSharedWorkspace(workspaceId) && existing().workspaceId == workspaceId;
+
+        allow create: if isSignedIn() &&
+                         isSharedWorkspace(workspaceId) &&
+                         settingId == 'devotional_privacy' &&
+                         incoming().ownerUid == request.auth.uid &&
+                         incoming().updatedByUid == request.auth.uid &&
+                         incoming().workspaceId == workspaceId &&
+                         incoming().keys().hasAll([
+                           'ownerUid', 'workspaceId', 'policy', 'updatedByUid', 'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'ownerUid', 'workspaceId', 'policy', 'updatedByUid', 'createdAt', 'updatedAt'
+                         ]) &&
+                         isValidPrivacySettings(incoming()) &&
+                         isWorkspaceMember(workspaceId);
+
+        allow update: if isSignedIn() &&
+                         isSharedWorkspace(workspaceId) &&
+                         settingId == 'devotional_privacy' &&
+                         isValidPrivacySettings(incoming()) &&
+                         incoming().ownerUid == existing().ownerUid &&
+                         incoming().workspaceId == existing().workspaceId &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().updatedByUid == request.auth.uid &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['policy', 'updatedByUid', 'updatedAt']) &&
+                         isWorkspaceMember(workspaceId);
+
+        allow delete: if false;
+      }
+
+      match /employees/{empId} {
+        allow get: if isSharedWorkspace(workspaceId) && isValidId(empId) && isWorkspaceMember(workspaceId);
+        allow list: if isSignedIn() && isSharedWorkspace(workspaceId) && existing().workspaceId == workspaceId;
+
+        allow create: if isSignedIn() &&
+                         isSharedWorkspace(workspaceId) &&
+                         isValidId(empId) &&
+                         incoming().ownerUid == request.auth.uid &&
+                         incoming().workspaceId == workspaceId &&
+                         incoming().keys().hasAll([
+                           'ownerUid', 'workspaceId', 'employeeId', 'fullName', 'role', 'pin',
+                           'active', 'admin', 'createdAtMillis', 'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'ownerUid', 'workspaceId', 'employeeId', 'fullName', 'role', 'pin',
+                           'active', 'admin', 'createdAtMillis', 'createdAt', 'updatedAt'
+                         ]) &&
+                         isValidEmployee(incoming()) &&
+                         isWorkspaceMember(workspaceId);
+
+        allow update: if isSignedIn() &&
+                         isSharedWorkspace(workspaceId) &&
+                         isValidId(empId) &&
+                         isValidEmployee(incoming()) &&
+                         incoming().ownerUid == existing().ownerUid &&
+                         incoming().workspaceId == existing().workspaceId &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().createdAtMillis == existing().createdAtMillis &&
+                         incoming().admin == existing().admin &&
+                         isWorkspaceMember(workspaceId) && (
+                           incoming().diff(existing()).affectedKeys().hasOnly(['employeeId', 'fullName', 'role', 'updatedAt']) ||
+                           incoming().diff(existing()).affectedKeys().hasOnly(['pin', 'updatedAt']) ||
+                           incoming().diff(existing()).affectedKeys().hasOnly(['active', 'updatedAt']) ||
+                           (isAdmin() && incoming().diff(existing()).affectedKeys().hasOnly(['employeeId', 'fullName', 'role', 'pin', 'active', 'updatedAt']))
+                         );
+
+        allow delete: if isSharedWorkspace(workspaceId) &&
+                         isValidId(empId) &&
+                         existing().admin == false &&
+                         isWorkspaceMember(workspaceId);
+      }
+
+      match /devotional_status/{devId} {
+        allow get: if isSharedWorkspace(workspaceId) && isValidId(devId) && isWorkspaceMember(workspaceId);
+        allow list: if isSignedIn() && isSharedWorkspace(workspaceId) && existing().workspaceId == workspaceId;
+
+        allow create: if isSignedIn() &&
+                         isSharedWorkspace(workspaceId) &&
+                         isValidId(devId) &&
+                         devId == incoming().employeeUid + '_' + incoming().dateKey &&
+                         incoming().ownerUid == request.auth.uid &&
+                         incoming().workspaceId == workspaceId &&
+                         incoming().keys().hasAll([
+                           'ownerUid', 'workspaceId', 'employeeUid', 'employeeId', 'employeeName',
+                           'dateKey', 'status', 'hasPhoto', 'shareWithAdmin', 'submittedAt', 'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'ownerUid', 'workspaceId', 'employeeUid', 'employeeId', 'employeeName',
+                           'dateKey', 'status', 'hasPhoto', 'shareWithAdmin', 'submittedAt', 'createdAt', 'updatedAt'
+                         ]) &&
+                         isValidDevotionalStatus(incoming()) &&
+                         isWorkspaceMember(workspaceId) &&
+                         (
+                           exists(/databases/$(database)/documents/workspaces/$(workspaceId)/employees/$(incoming().employeeUid)) ||
+                           existsAfter(/databases/$(database)/documents/workspaces/$(workspaceId)/employees/$(incoming().employeeUid))
+                         ) &&
+                         (
+                           exists(/databases/$(database)/documents/workspaces/$(workspaceId)/devotionals/$(devId)) ||
+                           existsAfter(/databases/$(database)/documents/workspaces/$(workspaceId)/devotionals/$(devId))
+                         );
+
+        allow update: if false;
+        allow delete: if isSharedWorkspace(workspaceId) &&
+                         isValidId(devId) &&
+                         isWorkspaceMember(workspaceId) &&
+                         !existsAfter(/databases/$(database)/documents/workspaces/$(workspaceId)/employees/$(existing().employeeUid));
+      }
+
+      match /devotionals/{devId} {
+        allow get: if isSignedIn() &&
+                      isSharedWorkspace(workspaceId) &&
+                      isValidId(devId) &&
+                      isWorkspaceMember(workspaceId) &&
+                      (existing().ownerUid == request.auth.uid || isAdmin());
+
+        allow list: if isSignedIn() &&
+                       isSharedWorkspace(workspaceId) &&
+                       (existing().ownerUid == request.auth.uid || (isAdmin() && existing().workspaceId == workspaceId));
+
+        allow create: if isSignedIn() &&
+                         isSharedWorkspace(workspaceId) &&
+                         isValidId(devId) &&
+                         devId == incoming().employeeUid + '_' + incoming().dateKey &&
+                         incoming().ownerUid == request.auth.uid &&
+                         incoming().workspaceId == workspaceId &&
+                         incoming().keys().hasAll([
+                           'ownerUid', 'workspaceId', 'employeeUid', 'employeeId', 'employeeName',
+                           'dateKey', 'scripture', 'observation', 'application', 'prayer',
+                           'photoStoragePath', 'photoUrl', 'status', 'shareWithAdmin',
+                           'submittedAt', 'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'ownerUid', 'workspaceId', 'employeeUid', 'employeeId', 'employeeName',
+                           'dateKey', 'scripture', 'observation', 'application', 'prayer',
+                           'photoStoragePath', 'photoUrl', 'status', 'shareWithAdmin',
+                           'submittedAt', 'createdAt', 'updatedAt'
+                         ]) &&
+                         isValidDevotional(incoming()) &&
+                         isWorkspaceMember(workspaceId) &&
+                         (
+                           exists(/databases/$(database)/documents/workspaces/$(workspaceId)/employees/$(incoming().employeeUid)) ||
+                           existsAfter(/databases/$(database)/documents/workspaces/$(workspaceId)/employees/$(incoming().employeeUid))
+                         ) &&
+                         (
+                           exists(/databases/$(database)/documents/workspaces/$(workspaceId)/devotional_status/$(devId)) ||
+                           existsAfter(/databases/$(database)/documents/workspaces/$(workspaceId)/devotional_status/$(devId))
+                         );
+
+        allow update: if false;
+        allow delete: if isSharedWorkspace(workspaceId) &&
+                         isValidId(devId) &&
+                         isWorkspaceMember(workspaceId) &&
+                         !existsAfter(/databases/$(database)/documents/workspaces/$(workspaceId)/employees/$(existing().employeeUid));
+      }
+
+      match /attendance/{attId} {
+        allow get: if isSharedWorkspace(workspaceId) && isValidId(attId) && isWorkspaceMember(workspaceId);
+        allow list: if isSignedIn() && isSharedWorkspace(workspaceId) && existing().workspaceId == workspaceId;
+
+        allow create: if isSignedIn() &&
+                         isSharedWorkspace(workspaceId) &&
+                         isValidId(attId) &&
+                         attId == incoming().employeeUid + '_' + incoming().dateKey &&
+                         incoming().ownerUid == request.auth.uid &&
+                         incoming().workspaceId == workspaceId &&
+                         incoming().keys().hasAll([
+                           'ownerUid', 'workspaceId', 'employeeUid', 'devotionalId', 'dateKey', 'clockInMillis', 'status', 'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'ownerUid', 'workspaceId', 'employeeUid', 'devotionalId', 'dateKey', 'clockInMillis', 'clockOutMillis', 'status', 'createdAt', 'updatedAt'
+                         ]) &&
+                         isValidAttendance(incoming()) &&
+                         isWorkspaceMember(workspaceId) &&
+                         exists(/databases/$(database)/documents/workspaces/$(workspaceId)/employees/$(incoming().employeeUid)) &&
+                         hasValidDevotionalForAttendance(workspaceId, incoming());
+
+        allow update: if isSignedIn() &&
+                         isSharedWorkspace(workspaceId) &&
+                         isValidId(attId) &&
+                         isValidAttendance(incoming()) &&
+                         incoming().ownerUid == existing().ownerUid &&
+                         incoming().workspaceId == existing().workspaceId &&
+                         incoming().employeeUid == existing().employeeUid &&
+                         incoming().devotionalId == existing().devotionalId &&
+                         incoming().dateKey == existing().dateKey &&
+                         incoming().createdAt == existing().createdAt &&
+                         isWorkspaceMember(workspaceId) && (
+                           (existing().status != 'CLOCKED_OUT' && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt'])) ||
+                           (existing().status == 'WORKING' && incoming().status == 'CLOCKED_OUT' && incoming().diff(existing()).affectedKeys().hasOnly(['clockOutMillis', 'status', 'updatedAt'])) ||
+                           (existing().status == 'NOT_CLOCKED_IN' && incoming().status == 'WORKING' && hasValidDevotionalForAttendance(workspaceId, incoming()) && incoming().diff(existing()).affectedKeys().hasOnly(['clockInMillis', 'status', 'updatedAt'])) ||
+                           (isAdmin() && incoming().diff(existing()).affectedKeys().hasOnly(['clockInMillis', 'clockOutMillis', 'status', 'updatedAt']))
+                         );
+
+        allow delete: if isSharedWorkspace(workspaceId) && isValidId(attId) && isWorkspaceMember(workspaceId);
+      }
+
+      match /breaks/{breakId} {
+        allow get: if isSharedWorkspace(workspaceId) && isValidId(breakId) && isWorkspaceMember(workspaceId);
+        allow list: if isSignedIn() && isSharedWorkspace(workspaceId) && existing().workspaceId == workspaceId;
+
+        allow create: if isSignedIn() &&
+                         isSharedWorkspace(workspaceId) &&
+                         isValidId(breakId) &&
+                         incoming().ownerUid == request.auth.uid &&
+                         incoming().workspaceId == workspaceId &&
+                         incoming().keys().hasAll([
+                           'ownerUid', 'workspaceId', 'attendanceId', 'employeeUid', 'dateKey', 'breakStartMillis', 'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'ownerUid', 'workspaceId', 'attendanceId', 'employeeUid', 'dateKey', 'breakStartMillis', 'breakEndMillis', 'createdAt', 'updatedAt'
+                         ]) &&
+                         isValidBreak(incoming()) &&
+                         isWorkspaceMember(workspaceId) &&
+                         (
+                           exists(/databases/$(database)/documents/workspaces/$(workspaceId)/attendance/$(incoming().attendanceId)) ||
+                           existsAfter(/databases/$(database)/documents/workspaces/$(workspaceId)/attendance/$(incoming().attendanceId))
+                         );
+
+        allow update: if isSignedIn() &&
+                         isSharedWorkspace(workspaceId) &&
+                         isValidId(breakId) &&
+                         isValidBreak(incoming()) &&
+                         incoming().ownerUid == existing().ownerUid &&
+                         incoming().workspaceId == existing().workspaceId &&
+                         incoming().attendanceId == existing().attendanceId &&
+                         incoming().employeeUid == existing().employeeUid &&
+                         incoming().dateKey == existing().dateKey &&
+                         incoming().breakStartMillis == existing().breakStartMillis &&
+                         incoming().createdAt == existing().createdAt &&
+                         isWorkspaceMember(workspaceId) && (
+                           ((!('breakEndMillis' in existing()) || existing().breakEndMillis == null) &&
+                            incoming().diff(existing()).affectedKeys().hasOnly(['breakEndMillis', 'updatedAt'])) ||
+                           (isAdmin() && incoming().diff(existing()).affectedKeys().hasOnly(['breakEndMillis', 'updatedAt']))
+                         );
+
+        allow delete: if isSharedWorkspace(workspaceId) && isValidId(breakId) && isWorkspaceMember(workspaceId);
+      }
+    }
+  }
+}

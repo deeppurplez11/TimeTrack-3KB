@@ -1,0 +1,506 @@
+{
+  "entities": {
+    "Workspace": {
+      "title": "Workspace",
+      "description": "Shared 374 Kingdom Builders company workspace.",
+      "type": "object",
+      "properties": {
+        "ownerUid": {
+          "type": "string",
+          "description": "Authenticated Firebase UID that bootstrapped this workspace."
+        },
+        "workspaceId": {
+          "type": "string",
+          "description": "Fixed shared workspace identifier (3kb_main)."
+        },
+        "name": {
+          "type": "string",
+          "description": "Company workspace display name."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when created (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when last updated (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "ownerUid",
+        "workspaceId",
+        "name",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "WorkspaceMember": {
+      "title": "WorkspaceMember",
+      "description": "Membership record allowing any authenticated Google account to sync with the shared 3KB workspace.",
+      "type": "object",
+      "properties": {
+        "ownerUid": {
+          "type": "string",
+          "description": "Authenticated Firebase UID matching the member document ID."
+        },
+        "workspaceId": {
+          "type": "string",
+          "description": "Shared workspace identifier (3kb_main)."
+        },
+        "role": {
+          "type": "string",
+          "enum": ["member"],
+          "description": "Workspace membership role."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when created (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when last updated (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "ownerUid",
+        "workspaceId",
+        "role",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "DevotionalPrivacySettings": {
+      "title": "DevotionalPrivacySettings",
+      "description": "Configured workspace privacy policy governing admin access to SOAP entries and devotional photos.",
+      "type": "object",
+      "properties": {
+        "ownerUid": {
+          "type": "string",
+          "description": "Authenticated Firebase UID that initialized this setting."
+        },
+        "workspaceId": {
+          "type": "string",
+          "description": "Shared workspace identifier (3kb_main)."
+        },
+        "policy": {
+          "type": "string",
+          "enum": ["STATUS_ONLY", "OPT_IN_ONLY", "ADMIN_PASTORAL_VIEW"],
+          "description": "Active privacy mode for CEO/Admin devotional viewing."
+        },
+        "updatedByUid": {
+          "type": "string",
+          "description": "Authenticated Firebase UID that last updated the policy."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when last updated."
+        }
+      },
+      "required": [
+        "ownerUid",
+        "workspaceId",
+        "policy",
+        "updatedByUid",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Employee": {
+      "title": "Employee",
+      "description": "374 Kingdom Builders employee or administrator account inside the shared workspace.",
+      "type": "object",
+      "properties": {
+        "ownerUid": {
+          "type": "string",
+          "description": "Authenticated Firebase UID that created this employee record."
+        },
+        "workspaceId": {
+          "type": "string",
+          "description": "Shared workspace identifier (3kb_main)."
+        },
+        "employeeId": {
+          "type": "string",
+          "description": "Assigned company ID code such as 3KB-001."
+        },
+        "fullName": {
+          "type": "string",
+          "description": "Employee full name."
+        },
+        "role": {
+          "type": "string",
+          "description": "Job title or team role."
+        },
+        "pin": {
+          "type": "string",
+          "description": "4 to 6 digit numeric PIN for employee/admin portal verification."
+        },
+        "active": {
+          "type": "boolean",
+          "description": "Whether the employee account is active."
+        },
+        "admin": {
+          "type": "boolean",
+          "description": "Whether the account is the CEO/Admin account."
+        },
+        "createdAtMillis": {
+          "type": "integer",
+          "description": "Epoch milliseconds when the employee profile was created."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when created (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when last updated (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "ownerUid",
+        "workspaceId",
+        "employeeId",
+        "fullName",
+        "role",
+        "pin",
+        "active",
+        "admin",
+        "createdAtMillis",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "DevotionalStatus": {
+      "title": "DevotionalStatus",
+      "description": "Non-sensitive daily devotional completion metadata (excludes private reflections, prayer, and photo URLs).",
+      "type": "object",
+      "properties": {
+        "ownerUid": {
+          "type": "string",
+          "description": "Authenticated Firebase UID of the submitter."
+        },
+        "workspaceId": {
+          "type": "string",
+          "description": "Shared workspace identifier (3kb_main)."
+        },
+        "employeeUid": {
+          "type": "string",
+          "description": "Document ID of the employee."
+        },
+        "employeeId": {
+          "type": "string",
+          "description": "Assigned employee ID code such as 3KB-001."
+        },
+        "employeeName": {
+          "type": "string",
+          "description": "Employee full name."
+        },
+        "dateKey": {
+          "type": "string",
+          "description": "Asia/Manila calendar date key in yyyy-MM-dd format."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["SUBMITTED"],
+          "description": "Submission status."
+        },
+        "hasPhoto": {
+          "type": "boolean",
+          "description": "Indicates a photo was uploaded for this devotional."
+        },
+        "shareWithAdmin": {
+          "type": "boolean",
+          "description": "Whether the employee opted in to share photo and SOAP notes with Admin."
+        },
+        "submittedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Authoritative server timestamp when submitted."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when last updated."
+        }
+      },
+      "required": [
+        "ownerUid",
+        "workspaceId",
+        "employeeUid",
+        "employeeId",
+        "employeeName",
+        "dateKey",
+        "status",
+        "hasPhoto",
+        "shareWithAdmin",
+        "submittedAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Devotional": {
+      "title": "Devotional",
+      "description": "Private daily SOAP devotional submission and Firebase Storage photo reference.",
+      "type": "object",
+      "properties": {
+        "ownerUid": {
+          "type": "string",
+          "description": "Authenticated Firebase UID of the submitter."
+        },
+        "workspaceId": {
+          "type": "string",
+          "description": "Shared workspace identifier (3kb_main)."
+        },
+        "employeeUid": {
+          "type": "string",
+          "description": "Document ID of the employee."
+        },
+        "employeeId": {
+          "type": "string",
+          "description": "Assigned employee ID code such as 3KB-001."
+        },
+        "employeeName": {
+          "type": "string",
+          "description": "Employee full name."
+        },
+        "dateKey": {
+          "type": "string",
+          "description": "Asia/Manila calendar date key in yyyy-MM-dd format."
+        },
+        "scripture": {
+          "type": "string",
+          "description": "S - Scripture passage or verse."
+        },
+        "observation": {
+          "type": "string",
+          "description": "O - Observation learned from the passage."
+        },
+        "application": {
+          "type": "string",
+          "description": "A - Personal application to daily life."
+        },
+        "prayer": {
+          "type": "string",
+          "description": "P - Personal prayer request."
+        },
+        "photoStoragePath": {
+          "type": "string",
+          "description": "Firebase Storage object path for the uploaded devotional photo."
+        },
+        "photoUrl": {
+          "type": "string",
+          "description": "Firebase Storage download URL or compact Firestore-safe inline image URI for preview."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["SUBMITTED"],
+          "description": "Submission status."
+        },
+        "shareWithAdmin": {
+          "type": "boolean",
+          "description": "Whether the employee opted in to share photo and SOAP notes with Admin."
+        },
+        "submittedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Authoritative server timestamp when submitted."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when last updated."
+        }
+      },
+      "required": [
+        "ownerUid",
+        "workspaceId",
+        "employeeUid",
+        "employeeId",
+        "employeeName",
+        "dateKey",
+        "scripture",
+        "observation",
+        "application",
+        "prayer",
+        "photoStoragePath",
+        "photoUrl",
+        "status",
+        "shareWithAdmin",
+        "submittedAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "AttendanceRecord": {
+      "title": "AttendanceRecord",
+      "description": "Daily employee attendance shift record in Asia/Manila timezone, linked to a valid devotional submission.",
+      "type": "object",
+      "properties": {
+        "ownerUid": {
+          "type": "string",
+          "description": "Authenticated Firebase UID that created this attendance record."
+        },
+        "workspaceId": {
+          "type": "string",
+          "description": "Shared workspace identifier (3kb_main)."
+        },
+        "employeeUid": {
+          "type": "string",
+          "description": "Document ID of the employee in /workspaces/{workspaceId}/employees."
+        },
+        "devotionalId": {
+          "type": "string",
+          "description": "Linked devotional submission ID (${employeeUid}_${dateKey})."
+        },
+        "dateKey": {
+          "type": "string",
+          "description": "Asia/Manila calendar date key in yyyy-MM-dd format."
+        },
+        "clockInMillis": {
+          "type": "integer",
+          "description": "Epoch milliseconds when clocked in."
+        },
+        "clockOutMillis": {
+          "type": "integer",
+          "description": "Optional epoch milliseconds when clocked out."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["NOT_CLOCKED_IN", "WORKING", "ON_BREAK", "CLOCKED_OUT"],
+          "description": "Current attendance status."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when created (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when last updated (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "ownerUid",
+        "workspaceId",
+        "employeeUid",
+        "devotionalId",
+        "dateKey",
+        "clockInMillis",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "BreakRecord": {
+      "title": "BreakRecord",
+      "description": "Individual break interval linked to a daily AttendanceRecord.",
+      "type": "object",
+      "properties": {
+        "ownerUid": {
+          "type": "string",
+          "description": "Authenticated Firebase UID that created this break record."
+        },
+        "workspaceId": {
+          "type": "string",
+          "description": "Shared workspace identifier (3kb_main)."
+        },
+        "attendanceId": {
+          "type": "string",
+          "description": "Document ID of parent AttendanceRecord."
+        },
+        "employeeUid": {
+          "type": "string",
+          "description": "Document ID of the employee."
+        },
+        "dateKey": {
+          "type": "string",
+          "description": "Asia/Manila date key yyyy-MM-dd."
+        },
+        "breakStartMillis": {
+          "type": "integer",
+          "description": "Epoch milliseconds when break started."
+        },
+        "breakEndMillis": {
+          "type": "integer",
+          "description": "Optional epoch milliseconds when break ended."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when created (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when last updated (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "ownerUid",
+        "workspaceId",
+        "attendanceId",
+        "employeeUid",
+        "dateKey",
+        "breakStartMillis",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/workspaces/{workspaceId}": {
+      "schema": { "$ref": "#/entities/Workspace" },
+      "description": "Shared 374 Kingdom Builders workspace root document."
+    },
+    "/workspaces/{workspaceId}/members/{memberUid}": {
+      "schema": { "$ref": "#/entities/WorkspaceMember" },
+      "description": "Authenticated Google account members connected to the shared workspace."
+    },
+    "/workspaces/{workspaceId}/settings/{settingId}": {
+      "schema": { "$ref": "#/entities/DevotionalPrivacySettings" },
+      "description": "Workspace configuration including devotional privacy policy."
+    },
+    "/workspaces/{workspaceId}/employees/{empId}": {
+      "schema": { "$ref": "#/entities/Employee" },
+      "description": "Shared roster of employees and CEO/Admin account for 374 Kingdom Builders."
+    },
+    "/workspaces/{workspaceId}/devotional_status/{devId}": {
+      "schema": { "$ref": "#/entities/DevotionalStatus" },
+      "description": "Non-sensitive daily devotional completion records for overview and clock-in verification."
+    },
+    "/workspaces/{workspaceId}/devotionals/{devId}": {
+      "schema": { "$ref": "#/entities/Devotional" },
+      "description": "Private daily SOAP devotionals and photo storage references restricted to owner and authorized admin."
+    },
+    "/workspaces/{workspaceId}/attendance/{attId}": {
+      "schema": { "$ref": "#/entities/AttendanceRecord" },
+      "description": "Shared daily attendance shift logs linked to a valid daily devotional submission."
+    },
+    "/workspaces/{workspaceId}/breaks/{breakId}": {
+      "schema": { "$ref": "#/entities/BreakRecord" },
+      "description": "Shared break intervals linked to daily attendance records."
+    }
+  }
+}
